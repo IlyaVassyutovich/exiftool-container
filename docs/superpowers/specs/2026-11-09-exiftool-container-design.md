@@ -311,3 +311,6 @@ independent copies (drift, and agents follow the stale one).
    own default with no owner rationale. See D18 in `docs/decisions.md`.
 4. CI is split into `pr.yml` and `master.yml` sharing a reusable `_build.yml`;
    the required check is `build / build-and-smoke-test`. See D21.
+5. The repo admin is no longer on the ruleset's bypass list; every change goes
+   through a pull request. This reverses the original D15. See D15 in
+   `docs/decisions.md`.

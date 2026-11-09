@@ -196,15 +196,18 @@ sooner than `main`'s. All four are listed as known gaps in the README. Date pars
 needs no extra module: exiftool falls back from `POSIX::strptime` to
 `Time::Piece`, which is in the image.
 
-## D15. Required check on `master`; repo admin may bypass
+## D15. Required check on `master`, no bypass
 
 Decision: a ruleset on `master` requires `build / build-and-smoke-test` (the
-reusable build job as called from `pr.yml`, D21); the repo admin (owner) is on
-the bypass list.
+reusable build job as called from `pr.yml`, D21). Nobody may bypass it, so every
+change, the owner's included, reaches `master` through a pull request.
 
-Why: Renovate can then never merge untested changes (D6). The bypass keeps hand
-fixes to broken CI or Renovate config easy. The ruleset was created after the
-initial push so the first commit was not blocked.
+Why: Renovate can then never merge untested changes (D6), and neither can
+anyone else. The repo admin was originally on the bypass list to keep hand fixes
+to broken CI or Renovate config easy; the owner removed it once the setup was
+complete, since such fixes can go through a pull request like any other change.
+Renaming the required check needs the ruleset updated first, or pull requests
+wait for a check that never reports.
 
 ## D16. Agent instructions: `AGENTS.md` canonical, `CLAUDE.md` imports it
 
