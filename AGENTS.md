@@ -11,6 +11,7 @@ This repo builds a small public container image that runs exiftool by hand (`ghc
 - amd64 only; the platform list is set once, as `PLATFORMS` in `.github/workflows/ci.yml` (D10).
 - Container runs as UID/GID 1000, never root.
 - Text files use LF (`.gitattributes`). Comments explain why, not what.
+- Commit subjects are plain imperative sentences with no conventional-commit prefixes, and commits carry no Co-authored-by or other attribution trailers.
 
 ## Manual bump procedures
 
