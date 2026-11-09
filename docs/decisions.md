@@ -189,7 +189,10 @@ locally" fails silently for those. It is pinned exactly and bumped like Perl
 `Compress::Raw::Lzma` and `File::StatX` are not packaged in Alpine 3.24;
 shipping them would mean compiling from CPAN, so they are out of scope.
 `Unicode::LineBreak` is packaged (`perl-unicode-linebreak`, `community`) but
-is not shipped. All four are listed as known gaps in the README. Date parsing
+is not shipped: exiftool uses it only to align plain-text columns under a
+non-English `-lang`, which is cosmetic, while shipping it would add two pins
+(it pulls in `perl-mime-charset`) from `community`, whose security support ends
+sooner than `main`'s. All four are listed as known gaps in the README. Date parsing
 needs no extra module: exiftool falls back from `POSIX::strptime` to
 `Time::Piece`, which is in the image.
 
