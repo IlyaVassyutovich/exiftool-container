@@ -1,0 +1,37 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    ":dependencyDashboard"
+  ],
+  "automerge": true,
+  "platformAutomerge": true,
+  "customManagers": [
+    {
+      "description": "Containerfile ARG pins annotated with a renovate comment; the optional _COMMIT ARG is bumped together with the version because the build checks out by commit, not tag",
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)Containerfile$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\nARG \\w+_VERSION=(?<currentValue>\\S+)(\\nARG \\w+_COMMIT=(?<currentDigest>[0-9a-f]{40}))?"
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}loose{{/if}}"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Let upstream exiftool releases settle before they are proposed",
+      "matchDepNames": ["exiftool/exiftool"],
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "An Alpine minor/major bump also needs the Repology package names and Perl pins moved by hand, so it must not merge unattended",
+      "matchDepNames": ["alpine"],
+      "matchUpdateTypes": ["minor", "major"],
+      "automerge": false,
+      "prBodyNotes": [
+        "Also move the `alpine_3_XX/*` Repology names and the Perl pins; see AGENTS.md"
+      ]
+    }
+  ]
+}
