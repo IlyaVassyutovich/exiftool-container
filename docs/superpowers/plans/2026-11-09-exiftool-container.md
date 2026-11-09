@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-09-exiftool-container-design.md`. Read it first; decision IDs (D1–D16) below refer to it.
 
-> Amended after execution: the default branch is `master` (renamed from `main`), and commit subjects are plain imperative sentences without conventional-commit prefixes. The commit messages and `main` references below are historical; see spec Amendments.
+> Amended after execution: commit subjects are plain imperative sentences without conventional-commit prefixes; the commit messages below are historical. See spec Amendments.
 
 ## Global Constraints
 
@@ -122,7 +122,7 @@ Expected: the build fails at the verify step.
 
 - [ ] **Step 1: Write `ci.yml`**
 
-- Triggers: `pull_request`, `push` to `main`, `workflow_dispatch`.
+- Triggers: `pull_request`, `push` to `master`, `workflow_dispatch`.
 - Top-level `permissions: contents: read`.
 - Job `build`:
   1. checkout
@@ -139,7 +139,7 @@ Expected: no output, exit 0.
 
 - [ ] **Step 3: Create the repo and push**
 
-Run: `gh repo create IlyaVassyutovich/exiftool-container --public --source . --remote origin --description "Pinned, non-root exiftool container image" && git push -u origin main`
+Run: `gh repo create IlyaVassyutovich/exiftool-container --public --source . --remote origin --description "Pinned, non-root exiftool container image" && git push -u origin master`
 
 - [ ] **Step 4: Verify CI is green**
 
@@ -161,8 +161,8 @@ Expected: the `build-and-smoke-test` job succeeds and its log shows 9 × `ok`.
 
 - [ ] **Step 1: Add the `publish` job**
 
-- `needs: build`; `if: github.event_name == 'push' && github.ref == 'refs/heads/main'`.
-- `concurrency: { group: publish-main, cancel-in-progress: false }` (Review Focus 1).
+- `needs: build`; `if: github.event_name == 'push' && github.ref == 'refs/heads/master'`.
+- `concurrency: { group: publish-master, cancel-in-progress: false }` (Review Focus 1).
 - `permissions: contents: read, packages: write, id-token: write, attestations: write`.
 - Steps:
   1. checkout
@@ -184,7 +184,7 @@ Check: `rg -n 'cancel-in-progress: false' .github/workflows/ci.yml` finds the li
 ```sh
 gh attestation verify "oci://$IMAGE@$DIGEST" --repo IlyaVassyutovich/exiftool-container
 cosign verify "$IMAGE@$DIGEST" \
-  --certificate-identity-regexp '^https://github\.com/IlyaVassyutovich/exiftool-container/\.github/workflows/ci\.yml@refs/heads/main$' \
+  --certificate-identity-regexp '^https://github\.com/IlyaVassyutovich/exiftool-container/\.github/workflows/ci\.yml@refs/heads/master$' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 Expected: both exit 0. `gh` needs `GH_TOKEN: ${{ github.token }}`.
@@ -228,7 +228,7 @@ Expected: `Config validated successfully`.
 
 - [ ] **Step 3: Commit** (`chore: add Renovate config`) and push. CI stays green.
 
-- [ ] **Step 4: Create the ruleset on `main` (D15)**
+- [ ] **Step 4: Create the ruleset on `master` (D15)**
 
 `gh api -X POST repos/IlyaVassyutovich/exiftool-container/rulesets` with:
 - `target: branch`, `enforcement: active`
@@ -236,7 +236,7 @@ Expected: `Config validated successfully`.
 - rules: `required_status_checks` (context `build-and-smoke-test`, `strict_required_status_checks_policy: false`), plus `deletion` and `non_fast_forward`
 - `bypass_actors: [{actor_id: 5, actor_type: RepositoryRole, bypass_mode: always}]` (admin)
 
-Verify: `gh api repos/IlyaVassyutovich/exiftool-container/rules/branches/main | toon` lists the required check.
+Verify: `gh api repos/IlyaVassyutovich/exiftool-container/rules/branches/master | toon` lists the required check.
 
 - [ ] **Step 5: Hand-off to the owner, then verify**
 

@@ -19,7 +19,10 @@ jobs:
     name: build-and-smoke-test
     runs-on: ubuntu-latest
     steps:
+      # Nothing in CI pushes to git, so the token need not stay in .git/config.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       # `load: true` supports a single platform only, so this job always builds
       # linux/amd64 regardless of PLATFORMS; multi-platform builds belong to publish.
@@ -67,6 +70,8 @@ jobs:
           fi
       - if: steps.guard.outputs.current == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - id: version
         if: steps.guard.outputs.current == 'true'
         run: |
@@ -84,16 +89,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-      - id: meta
-        if: steps.guard.outputs.current == 'true'
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
-        with:
-          images: ${{ env.IMAGE }}
-          tags: |
-            type=raw,value=latest
-            type=raw,value=${{ steps.version.outputs.version }}
-          labels: |
-            org.opencontainers.image.version=${{ steps.version.outputs.version }}
       # Pushed by digest only: tags move after the digest is signed and tested.
       - id: push
         if: steps.guard.outputs.current == 'true'
@@ -103,7 +98,12 @@ jobs:
           file: Containerfile
           platforms: ${{ env.PLATFORMS }}
           outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
-          labels: ${{ steps.meta.outputs.labels }}
+          # Build-specific labels only: the Containerfile owns licenses and title, which
+          # describe the image's contents rather than this repo (D12).
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
           sbom: true
           provenance: mode=max
           cache-from: type=gha

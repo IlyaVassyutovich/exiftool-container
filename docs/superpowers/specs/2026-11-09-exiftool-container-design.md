@@ -305,8 +305,7 @@ independent copies (drift, and agents follow the stale one).
 1. Publish pushes by digest, moves tags only after attest, sign, verify and
    smoke, and runs a tip-of-default-branch guard. See D17 in
    `docs/decisions.md`.
-2. The default branch is `master` (the repo was created as `main` by mistake
-   and renamed). See D18 in `docs/decisions.md`.
+2. Default branch is `master` (D18).
 3. Commit subjects are plain imperative sentences. This reverses the
    conventional-commit subjects the plan prescribed, which were the planner's
    own default with no owner rationale. See D18 in `docs/decisions.md`.

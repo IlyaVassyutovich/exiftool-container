@@ -5,6 +5,10 @@ ARG EXIFTOOL_COMMIT=9b8664dfcf2c609d3cc8925d380e98ad2a379f9b
 ARG PERL_VERSION=5.42.3-r0
 # renovate: datasource=repology depName=alpine_3_24/perl-archive-zip versioning=loose
 ARG PERL_ARCHIVE_ZIP_VERSION=1.68-r3
+# renovate: datasource=repology depName=alpine_3_24/libbz2 versioning=loose
+ARG LIBBZ2_VERSION=1.0.8-r6
+# renovate: datasource=repology depName=alpine_3_24/tzdata versioning=loose
+ARG TZDATA_VERSION=2026f-r0
 
 FROM alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf AS source
 ARG EXIFTOOL_VERSION
@@ -22,9 +26,17 @@ RUN git init -q . \
 FROM alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf
 ARG PERL_VERSION
 ARG PERL_ARCHIVE_ZIP_VERSION
+ARG LIBBZ2_VERSION
+ARG TZDATA_VERSION
 LABEL org.opencontainers.image.licenses="Artistic-1.0-Perl OR GPL-1.0-or-later" \
       org.opencontainers.image.title="exiftool"
-RUN apk add --no-cache "perl=$PERL_VERSION" "perl-archive-zip=$PERL_ARCHIVE_ZIP_VERSION"
+# libbz2 arrives as a perl dependency; naming it here keeps apk from resolving it unpinned
+# from the live index.
+RUN apk add --no-cache \
+    "perl=$PERL_VERSION" \
+    "perl-archive-zip=$PERL_ARCHIVE_ZIP_VERSION" \
+    "libbz2=$LIBBZ2_VERSION" \
+    "tzdata=$TZDATA_VERSION"
 COPY --from=source /src/exiftool /opt/exiftool/exiftool
 COPY --from=source /src/lib /opt/exiftool/lib
 RUN ln -s /opt/exiftool/exiftool /usr/local/bin/exiftool \

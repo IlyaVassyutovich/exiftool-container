@@ -122,6 +122,13 @@ check_readonly_mount() {
     expect_eq readonly_mount "$out" JPEG
 }
 
+# Moscow has had no DST since 2014, so its offset is the same all year.
+check_timezone() {
+    newdir
+    out=$(run "" -e TZ=Europe/Moscow --entrypoint date "$IMAGE" +%z 2>&1)
+    expect_eq timezone "$out" +0300
+}
+
 check_version
 check_non_root
 check_perl_modules
@@ -131,5 +138,6 @@ check_user_override
 check_unicode_filename
 check_stdin_read
 check_readonly_mount
+check_timezone
 
 exit "$FAILED"

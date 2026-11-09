@@ -92,7 +92,12 @@ required (D15). Without a required check, GitHub native auto-merge can merge
 before CI runs.
 
 An Alpine minor or major bump is the exception and is not auto-merged: the
-Repology package names and Perl pins must be moved by hand (see `AGENTS.md`).
+Repology package names and package pins must be moved by hand (see
+`AGENTS.md`). Alpine also has `separateMinorPatch` enabled. Renovate's default
+proposes only the newest version, so once a newer Alpine minor exists it would
+offer just that minor and never the patch releases of the current one; with
+the flag, patch bumps keep arriving and auto-merging alongside the manual minor
+PR.
 
 ## D7. Moving tags only: `latest` and `<exiftool version>`
 
@@ -153,6 +158,13 @@ Decision: the repo's own files are Apache-2.0.
 Why: a permissive, widely understood license. The published image also contains
 exiftool and Perl under Perl's terms (GPL or Artistic); the README notes this.
 
+Image labels: the `Containerfile` owns `org.opencontainers.image.licenses`
+(`Artistic-1.0-Perl OR GPL-1.0-or-later`) and `title` (`exiftool`). CI sets
+only `source`, `revision` and `version`, built explicitly in the workflow. Why:
+`docker/metadata-action` adds `licenses` and `title` from the repository
+(Apache-2.0, `exiftool-container`) and those override the `Containerfile`,
+which would mislabel the image's contents with the license of the build files.
+
 Rejected: none considered.
 
 ## D13. `git` in the throwaway clone stage is not version-pinned (builder's call, owner accepted)
@@ -165,17 +177,21 @@ reaches the image. Pinning it would add another package that breaks the build
 whenever Alpine drops an old version, for no gain. The "every input pinned" rule
 applies to what ships in the final image.
 
-## D14. Optional Perl modules: ship `Archive::Zip`, skip the unpackaged ones
+## D14. Optional Perl modules: ship `Archive::Zip`, skip the rest
 
-Decision: install `perl-archive-zip`; do not ship `IO::Compress::Brotli` or
-`POSIX::strptime`.
+Decision: install `perl-archive-zip`; do not ship `IO::Compress::Brotli`,
+`Compress::Raw::Lzma`, `File::StatX` or `Unicode::LineBreak`.
 
 Why: `Archive::Zip` (~200 KB, Alpine `main`) lets exiftool read ZIP-based
 formats (DOCX, XLSX, ODT, EPUB and others); without it "as if installed
 locally" fails silently for those. It is pinned exactly and bumped like Perl
-(D3), with the same accepted breakage risk. The other two are not packaged in
-Alpine 3.24; shipping them would mean compiling from CPAN, so they are out of
-scope and listed as known gaps in the README.
+(D3), with the same accepted breakage risk. `IO::Compress::Brotli`,
+`Compress::Raw::Lzma` and `File::StatX` are not packaged in Alpine 3.24;
+shipping them would mean compiling from CPAN, so they are out of scope.
+`Unicode::LineBreak` is packaged (`perl-unicode-linebreak`, `community`) but
+is not shipped. All four are listed as known gaps in the README. Date parsing
+needs no extra module: exiftool falls back from `POSIX::strptime` to
+`Time::Piece`, which is in the image.
 
 ## D15. Required check on `master`; repo admin may bypass
 
@@ -222,18 +238,38 @@ Rejected: tags first, verify after (shipped a broken tag); concurrency alone
 ## D18. Default branch `master`; plain commit subjects
 
 Decision: the default branch is `master`, the owner's convention for every
-GitHub repo. This repo was initialised as `main` by mistake and renamed
-(2026-11-09, via the rename API). The ruleset targets the default branch, so it
-followed the rename. The cosign identity embeds the ref, so images signed before
-the rename carry `refs/heads/main`; new images carry `refs/heads/master`, and
-the README says so.
-
-Commit subjects are plain imperative sentences with no conventional-commit
-prefix (`feat:`, `chore:` and so on), and commits carry no attribution
-trailers. Renovate follows the same rule through `"semanticCommits":
-"disabled"`.
+GitHub repo. Commit subjects are plain imperative sentences with no
+conventional-commit prefix (`feat:`, `chore:` and so on), and commits carry no
+attribution trailers. Renovate follows the same rule through
+`"semanticCommits": "disabled"`.
 
 Why: the conventional prefixes in the plan were the planner's default, not an
 owner choice. The preset default is `auto`, which infers the style from commit
 history, so a single prefixed commit could flip Renovate back; setting it
 explicitly removes the guess.
+
+## D19. Timezone data in the image
+
+Decision: the final stage installs `tzdata`, pinned to an exact package
+version and bumped through Repology like the Perl packages. The README shows
+`-e TZ=Area/City`, and `-v /etc/localtime:/etc/localtime:ro` on Linux hosts.
+The smoke test checks that `TZ=Europe/Moscow` gives `+0300`.
+
+Why: exiftool writes file dates in the container's timezone. Without zone data
+the container is UTC-only, `-e TZ=` has no effect, and file times written by
+the container are shifted by the host's offset. Moscow is the test zone because
+it has had no DST since 2014, so the expected offset never changes.
+
+## D20. Transitive packages pinned; Alpine package pins move together
+
+Decision: `libbz2`, which `perl` pulls in, is pinned explicitly like the
+direct packages. The packages the final stage adds over the base image are
+exactly `perl`, `perl-archive-zip`, `libbz2` and `tzdata`, all pinned.
+Renovate groups every `alpine_3_*/*` Repology pin into one "Alpine packages"
+PR.
+
+Why: pinning the direct packages does not stop `apk` from resolving their
+dependencies from the live index, which is the drift D3 exists to prevent.
+Alpine removes superseded versions from its mirrors, so when several pins go
+stale at once, separate PRs would each fail on the other's missing version;
+one grouped PR moves them together.
