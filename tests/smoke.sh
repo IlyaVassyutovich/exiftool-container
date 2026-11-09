@@ -46,6 +46,10 @@ expect_eq() { # name actual expected
     if [ "$2" = "$3" ]; then ok "$1"; else fail "$1" "expected '$3', got '$2'"; fi
 }
 
+# Pull once, quietly: the checks below merge stderr into stdout, so an implicit
+# pull on the first `run` would put progress output into the compared string.
+"$ENGINE" image inspect "$IMAGE" >/dev/null 2>&1 || "$ENGINE" pull -q "$IMAGE" >/dev/null
+
 EXPECTED_VERSION=$(sed -n 's/^ARG EXIFTOOL_VERSION=//p' "$ROOT/Containerfile")
 
 check_version() {
