@@ -135,12 +135,12 @@ later bumps.
 Builder's call: the 7-day wait applies to exiftool only; Alpine digest/Perl
 and Actions updates are not delayed, because they are usually security fixes.
 
-**Required safeguard:** `main` must have a ruleset/branch protection making
+**Required safeguard:** `master` must have a ruleset/branch protection making
 the build-and-smoke-test check *required*. Without a required check, GitHub
 native auto-merge can merge before CI runs.
 
 ### D7. Moving tags only: `latest` and `<exiftool version>`
-Every merge to `main` publishes and moves `latest` and e.g. `13.61`. No
+Every merge to `master` publishes and moves `latest` and e.g. `13.61`. No
 immutable per-build tag; the digest is the immutable reference and the README
 says so. This matches Docker Official Images and Chainguard. Considered and
 rejected: Bitnami-style `13.61-rN` (needs a GHCR lookup to compute N), short
@@ -190,7 +190,7 @@ Renovate like Perl (D3), with the same accepted breakage risk.
 shipping them would mean compiling from CPAN, so they are out of scope. The
 README lists them as known gaps.
 
-### D15. Required check on `main`; repo admin may bypass
+### D15. Required check on `master`; repo admin may bypass
 The ruleset requires the build-and-smoke-test check so Renovate can never
 merge untested changes (D6). The repo admin (owner) is on the bypass list so
 hand fixes to broken CI/Renovate config stay easy. The ruleset is created
@@ -244,7 +244,7 @@ independent copies (drift, and agents follow the stale one).
 
 ### CI (GitHub Actions)
 - On pull request: build (no push), load locally, smoke-test.
-- On push to `main`: same build + smoke test, then push to GHCR with tags
+- On push to `master`: same build + smoke test, then push to GHCR with tags
   `latest` and `<EXIFTOOL_VERSION>` (read from the `Containerfile`, single
   source of truth), attach provenance + SBOM, cosign-sign the digest.
 - The check that gates PRs must have a stable name so the ruleset can require
@@ -267,7 +267,7 @@ independent copies (drift, and agents follow the stale one).
 
 ### Repo setup (builder performs, owner authorised it)
 - Create public repo `IlyaVassyutovich/exiftool-container`, push.
-- After the initial push, add a ruleset on `main` requiring the smoke-test
+- After the initial push, add a ruleset on `master` requiring the smoke-test
   check, with repo admin on the bypass list (D15).
 - After first publish, confirm the GHCR package is public and linked to the
   repo; if it defaulted to private, ask the owner to flip it (GitHub has no
@@ -299,3 +299,14 @@ independent copies (drift, and agents follow the stale one).
 - BuildKit attestations vs GitHub `actions/attest-*` mix, as long as D9's
   verify commands work.
 - Exact Renovate config syntax and presets.
+
+## Amendments (2026-11-09, after implementation)
+
+1. Publish pushes by digest, moves tags only after attest, sign, verify and
+   smoke, and runs a tip-of-default-branch guard. See D17 in
+   `docs/decisions.md`.
+2. The default branch is `master` (the repo was created as `main` by mistake
+   and renamed). See D18 in `docs/decisions.md`.
+3. Commit subjects are plain imperative sentences. This reverses the
+   conventional-commit subjects the plan prescribed, which were the planner's
+   own default with no owner rationale. See D18 in `docs/decisions.md`.

@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-09-exiftool-container-design.md`. Read it first; decision IDs (D1–D16) below refer to it.
 
+> Amended after execution: the default branch is `master` (renamed from `main`), and commit subjects are plain imperative sentences without conventional-commit prefixes. The commit messages and `main` references below are historical; see spec Amendments.
+
 ## Global Constraints
 
 - Base: `alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf`

@@ -87,7 +87,7 @@ the wait applies to later bumps. Builder's call: the wait applies to exiftool
 only. Alpine digest, Perl and Actions updates are not delayed because they are
 usually security fixes.
 
-Required safeguard: `main` must have a ruleset making `build-and-smoke-test`
+Required safeguard: `master` must have a ruleset making `build-and-smoke-test`
 required (D15). Without a required check, GitHub native auto-merge can merge
 before CI runs.
 
@@ -96,7 +96,7 @@ Repology package names and Perl pins must be moved by hand (see `AGENTS.md`).
 
 ## D7. Moving tags only: `latest` and `<exiftool version>`
 
-Decision: every merge to `main` moves `latest` and e.g. `13.61`. There is no
+Decision: every merge to `master` moves `latest` and e.g. `13.61`. There is no
 immutable per-build tag; the digest is the immutable reference and the README
 says so.
 
@@ -177,9 +177,9 @@ locally" fails silently for those. It is pinned exactly and bumped like Perl
 Alpine 3.24; shipping them would mean compiling from CPAN, so they are out of
 scope and listed as known gaps in the README.
 
-## D15. Required check on `main`; repo admin may bypass
+## D15. Required check on `master`; repo admin may bypass
 
-Decision: a ruleset on `main` requires `build-and-smoke-test`; the repo admin
+Decision: a ruleset on `master` requires `build-and-smoke-test`; the repo admin
 (owner) is on the bypass list.
 
 Why: Renovate can then never merge untested changes (D6). The bypass keeps hand
@@ -205,7 +205,7 @@ and provenance (`mode=max`). It then attests provenance, signs with keyless
 cosign, verifies both (`gh attestation verify`, `cosign verify`) and smoke-tests
 that digest. Only then does it move `latest` and `<version>` to exactly that
 digest and assert they resolve to it. A guard step skips the whole job unless
-the commit is still the tip of `main`, and job-level concurrency serialises
+the commit is still the tip of `master`, and job-level concurrency serialises
 publishes.
 
 Why: the original plan pushed tags first and verified afterwards. Run
@@ -218,3 +218,22 @@ window.
 
 Rejected: tags first, verify after (shipped a broken tag); concurrency alone
 (wrong order possible).
+
+## D18. Default branch `master`; plain commit subjects
+
+Decision: the default branch is `master`, the owner's convention for every
+GitHub repo. This repo was initialised as `main` by mistake and renamed
+(2026-11-09, via the rename API). The ruleset targets the default branch, so it
+followed the rename. The cosign identity embeds the ref, so images signed before
+the rename carry `refs/heads/main`; new images carry `refs/heads/master`, and
+the README says so.
+
+Commit subjects are plain imperative sentences with no conventional-commit
+prefix (`feat:`, `chore:` and so on), and commits carry no attribution
+trailers. Renovate follows the same rule through `"semanticCommits":
+"disabled"`.
+
+Why: the conventional prefixes in the plan were the planner's default, not an
+owner choice. The preset default is `auto`, which infers the style from commit
+history, so a single prefixed commit could flip Renovate back; setting it
+explicitly removes the guess.

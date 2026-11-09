@@ -25,7 +25,7 @@ The container runs as UID/GID 1000 with `/data` as the working directory, so fil
 
 ## Tags
 
-Only moving tags are published: `latest` and the exiftool version (for example `13.61`). Both move on every merge to `main`.
+Only moving tags are published: `latest` and the exiftool version (for example `13.61`). Both move on every merge to `master`.
 
 For an immutable reference, pin the digest:
 
@@ -47,9 +47,11 @@ Signature (needs [cosign](https://github.com/sigstore/cosign)):
 
 ```sh
 cosign verify ghcr.io/ilyavassyutovich/exiftool@sha256:<digest> \
-  --certificate-identity-regexp '^https://github\.com/IlyaVassyutovich/exiftool-container/\.github/workflows/ci\.yml@refs/heads/main$' \
+  --certificate-identity-regexp '^https://github\.com/IlyaVassyutovich/exiftool-container/\.github/workflows/ci\.yml@refs/heads/master$' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
+
+Images published before the 2026-11-09 branch rename were signed with the `refs/heads/main` identity.
 
 An SBOM is attached to the image in the registry. Resolve the digest of a tag with `docker buildx imagetools inspect ghcr.io/ilyavassyutovich/exiftool:latest`.
 

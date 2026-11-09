@@ -3,7 +3,7 @@ name: ci
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
 
 # Single source of truth for the published image coordinates and platforms.
@@ -36,12 +36,12 @@ jobs:
 
   publish:
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     # Serialises publishes so two never push at once; it does not order them by
     # commit, which the "current tip" guard step below takes care of.
     concurrency:
-      group: publish-main
+      group: publish-master
       cancel-in-progress: false
     permissions:
       contents: read
@@ -58,12 +58,12 @@ jobs:
           REPO: ${{ github.repository }}
           SHA: ${{ github.sha }}
         run: |
-          tip="$(gh api "repos/$REPO/commits/main" --jq .sha)"
+          tip="$(gh api "repos/$REPO/commits/master" --jq .sha)"
           if [ "$tip" = "$SHA" ]; then
             echo "current=true" >> "$GITHUB_OUTPUT"
           else
             echo "current=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Skipping publish: $SHA is not the tip of main ($tip)"
+            echo "::notice::Skipping publish: $SHA is not the tip of master ($tip)"
           fi
       - if: steps.guard.outputs.current == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -130,7 +130,7 @@ jobs:
         run: |
           gh attestation verify "oci://$IMAGE@$DIGEST" --repo IlyaVassyutovich/exiftool-container
           cosign verify "$IMAGE@$DIGEST" \
-            --certificate-identity-regexp '^https://github\.com/IlyaVassyutovich/exiftool-container/\.github/workflows/ci\.yml@refs/heads/main$' \
+            --certificate-identity-regexp '^https://github\.com/IlyaVassyutovich/exiftool-container/\.github/workflows/ci\.yml@refs/heads/master$' \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com
       - name: Smoke-test the published image
         if: steps.guard.outputs.current == 'true'
