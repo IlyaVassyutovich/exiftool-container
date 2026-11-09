@@ -111,4 +111,8 @@ jobs:
       - name: Smoke-test the published image
         env:
           DIGEST: ${{ steps.push.outputs.digest }}
-        run: bash tests/smoke.sh "$IMAGE@$DIGEST"
+        # Pre-pull so docker's implicit-pull progress doesn't pollute the output
+        # captured by the first smoke check.
+        run: |
+          docker pull --quiet "$IMAGE@$DIGEST"
+          bash tests/smoke.sh "$IMAGE@$DIGEST"
