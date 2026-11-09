@@ -297,3 +297,13 @@ dependencies from the live index, which is the drift D3 exists to prevent.
 Alpine removes superseded versions from its mirrors, so when several pins go
 stale at once, separate PRs would each fail on the other's missing version;
 one grouped PR moves them together.
+
+## D22. Pull requests are merged by rebase only
+
+Decision: the repository allows only rebase merging; merge commits and squash
+merging are disabled, for people and Renovate alike.
+
+Why: history stays linear and every commit lands exactly as written, so the
+plain-subject rule (D18) holds without GitHub-generated "Merge pull request"
+subjects or squash suffixes. With a single allowed method, how a pull request
+lands no longer depends on who merges it.
