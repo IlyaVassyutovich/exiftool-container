@@ -303,9 +303,11 @@ independent copies (drift, and agents follow the stale one).
 ## Amendments (2026-11-09, after implementation)
 
 1. Publish pushes by digest, moves tags only after attest, sign, verify and
-   smoke, and runs a tip-of-default-branch guard. See D17 in
-   `docs/decisions.md`.
+   smoke, and fails unless the commit is the tip of the default branch. See
+   D17 in `docs/decisions.md`.
 2. Default branch is `master` (D18).
 3. Commit subjects are plain imperative sentences. This reverses the
    conventional-commit subjects the plan prescribed, which were the planner's
    own default with no owner rationale. See D18 in `docs/decisions.md`.
+4. CI is split into `pr.yml` and `master.yml` sharing a reusable `_build.yml`;
+   the required check is `build / build-and-smoke-test`. See D21.

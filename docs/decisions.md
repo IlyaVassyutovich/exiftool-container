@@ -136,7 +136,7 @@ its low cost; it helps tooling that only understands cosign signatures.
 ## D10. amd64 only, multi-arch scaffolded
 
 Decision: the build takes a platform list with one entry, `linux/amd64`, set in
-exactly one place (`PLATFORMS` in `ci.yml`).
+exactly one place (`PLATFORMS` in `master.yml`).
 
 Why: adding `linux/arm64` must be a one-line change plus QEMU, which the publish
 job already enables when the list gains a non-native architecture. The base
@@ -198,8 +198,9 @@ needs no extra module: exiftool falls back from `POSIX::strptime` to
 
 ## D15. Required check on `master`; repo admin may bypass
 
-Decision: a ruleset on `master` requires `build-and-smoke-test`; the repo admin
-(owner) is on the bypass list.
+Decision: a ruleset on `master` requires `build / build-and-smoke-test` (the
+reusable build job as called from `pr.yml`, D21); the repo admin (owner) is on
+the bypass list.
 
 Why: Renovate can then never merge untested changes (D6). The bypass keeps hand
 fixes to broken CI or Renovate config easy. The ruleset was created after the
@@ -223,17 +224,21 @@ Decision: the publish job pushes the image by digest only, with BuildKit SBOM
 and provenance (`mode=max`). It then attests provenance, signs with keyless
 cosign, verifies both (`gh attestation verify`, `cosign verify`) and smoke-tests
 that digest. Only then does it move `latest` and `<version>` to exactly that
-digest and assert they resolve to it. A guard step skips the whole job unless
-the commit is still the tip of `master`, and job-level concurrency serialises
-publishes.
+digest and assert they resolve to it. The job first fails loudly unless the
+commit is still the tip of `master`, and job-level concurrency keeps two
+publishes from running at once.
 
 Why: the original plan pushed tags first and verified afterwards. Run
 42674470293 moved the tags to an image whose post-publish smoke test then
 failed, leaving users on a broken `latest`. Separately, job-level concurrency
-serialises publishes but orders them by build-finish time, not commit order, so
-an older commit could move the tags back after a newer one. The tip guard fixes
-the ordering; pushing by digest and moving tags last fixes the broken-tag
-window.
+orders publishes by build-finish time, not commit order, so an older commit
+could move the tags back after a newer one; the tip check stops that. Pushing
+by digest and moving tags last fixes the broken-tag window.
+
+The tip check originally skipped the job quietly, which needed an `if` on every
+step. The owner chose to fail loudly instead: this repo sees no concurrent
+work, so a superseded publish is rare, visible, and fixed by re-running from
+the newest commit.
 
 Rejected: tags first, verify after (shipped a broken tag); concurrency alone
 (wrong order possible).
@@ -250,6 +255,19 @@ Why: the conventional prefixes in the plan were the planner's default, not an
 owner choice. The preset default is `auto`, which infers the style from commit
 history, so a single prefixed commit could flip Renovate back; setting it
 explicitly removes the guess.
+
+## D21. One workflow per trigger, sharing a reusable build
+
+Decision: `pr.yml` (pull requests) and `master.yml` (pushes to `master`) both
+call `_build.yml` (`workflow_call`: build and smoke test); only `master.yml`
+publishes. There is no manual trigger. The required check is therefore named
+`build / build-and-smoke-test`, and the cosign identity is
+`master.yml@refs/heads/master`.
+
+Why: separation of concerns. Each file's trigger states what it is for, so the
+publish job needs no event condition, and write permissions exist only in the
+file that publishes. Renaming the check and the signing identity was a one-off
+change.
 
 ## D19. Timezone data in the image
 

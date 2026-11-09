@@ -49,7 +49,7 @@ Signature (needs [cosign](https://github.com/sigstore/cosign) v3 or newer; the s
 
 ```sh
 cosign verify ghcr.io/ilyavassyutovich/exiftool@sha256:<digest> \
-  --certificate-identity-regexp '^https://github\.com/IlyaVassyutovich/exiftool-container/\.github/workflows/ci\.yml@refs/heads/master$' \
+  --certificate-identity-regexp '^https://github\.com/IlyaVassyutovich/exiftool-container/\.github/workflows/master\.yml@refs/heads/master$' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
@@ -57,7 +57,7 @@ An SBOM is attached to the image in the registry. Resolve the digest of a tag wi
 
 ## Updates
 
-[Renovate](https://docs.renovatebot.com) keeps the Alpine base, the Alpine packages, exiftool and the GitHub Actions pinned to current versions, and auto-merges its PRs once the required `build-and-smoke-test` check passes. exiftool releases wait 7 days before being proposed, so the image normally trails upstream by about a week. An Alpine minor or major bump is not auto-merged because it needs manual changes.
+[Renovate](https://docs.renovatebot.com) keeps the Alpine base, the Alpine packages, exiftool and the GitHub Actions pinned to current versions, and auto-merges its PRs once the required `build / build-and-smoke-test` check passes. exiftool releases wait 7 days before being proposed, so the image normally trails upstream by about a week. An Alpine minor or major bump is not auto-merged because it needs manual changes.
 
 exiftool is built from its Git tag at a pinned commit rather than the release tarball. See [docs/decisions.md](docs/decisions.md) for why.
 

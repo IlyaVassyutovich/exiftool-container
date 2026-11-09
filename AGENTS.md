@@ -8,7 +8,7 @@ This repo builds a small public container image that runs exiftool by hand (`ghc
 - `Containerfile` stays engine-neutral and Podman-buildable: no `# syntax=`, `RUN --mount`, heredocs, `ADD --checksum`, `ADD <git url>`.
 - Every GitHub Action is pinned to a full commit SHA with a `# vX.Y.Z` comment.
 - Moving tags only (`latest`, `<exiftool version>`), no per-build tags, no registry retention (D7, D8). Tags move only after the digest is attested, signed, verified and smoke-tested (D17).
-- amd64 only; the platform list is set once, as `PLATFORMS` in `.github/workflows/ci.yml` (D10).
+- amd64 only; the platform list is set once, as `PLATFORMS` in `.github/workflows/master.yml` (D10).
 - Container runs as UID/GID 1000, never root.
 - Text files use LF (`.gitattributes`). Comments explain why, not what.
 - Commit subjects are plain imperative sentences with no conventional-commit prefixes, and commits carry no Co-authored-by or other attribution trailers.
