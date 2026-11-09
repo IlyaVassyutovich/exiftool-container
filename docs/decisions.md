@@ -13,8 +13,6 @@ Why: it keeps the repo engine-neutral. Renovate's `dockerfile` manager matches
 `Containerfile` by default. Dependabot does not reliably (open issue
 dependabot-core#6067), which is one reason for D2.
 
-Rejected: `Dockerfile` (ties the repo to one engine's naming).
-
 ## D2. Renovate, not Dependabot
 
 Decision: Renovate keeps every pin current.
@@ -25,8 +23,7 @@ digest, the Alpine Perl packages (via Repology), exiftool (via GitHub tags) and
 GitHub Actions SHAs. Cost: the Renovate GitHub App must be installed, which
 needs the owner's browser consent.
 
-Rejected: Dependabot (gaps above); several tools side by side (more config,
-more drift).
+Rejected: Dependabot (gaps above).
 
 ## D3. Perl from Alpine, pinned to an exact package version
 
@@ -78,8 +75,6 @@ marker, so filtering would mean scraping the history page. Releases come in
 irregular bursts (13.56 to 13.59 in Apr to May 2026, then 13.60 in late
 October).
 
-Rejected: tracking production releases only (needs scraping, lags far behind).
-
 ## D6. Renovate auto-merges, with a 7-day wait on exiftool releases
 
 Decision: all Renovate PRs auto-merge once required checks pass. exiftool
@@ -98,9 +93,6 @@ before CI runs.
 
 An Alpine minor or major bump is the exception and is not auto-merged: the
 Repology package names and Perl pins must be moved by hand (see `AGENTS.md`).
-
-Rejected: delaying every update (delays security fixes); no wait on exiftool
-(exposes the image to pulled releases).
 
 ## D7. Moving tags only: `latest` and `<exiftool version>`
 
@@ -136,9 +128,6 @@ Decision:
 Why: cosign overlaps with provenance, but the owner chose to include it given
 its low cost; it helps tooling that only understands cosign signatures.
 
-Rejected: provenance only (see above); a long-lived signing key (key custody
-for no gain over keyless).
-
 ## D10. amd64 only, multi-arch scaffolded
 
 Decision: the build takes a platform list with one entry, `linux/amd64`, set in
@@ -149,8 +138,6 @@ job already enables when the list gains a non-native architecture. The base
 digest is already the multi-arch index digest, and nothing in the `Containerfile`
 may be architecture-specific.
 
-Rejected: shipping arm64 now (out of scope for this version).
-
 ## D11. Build engine in CI: Docker Buildx (builder's call)
 
 Decision: CI builds with Docker Buildx.
@@ -158,8 +145,6 @@ Decision: CI builds with Docker Buildx.
 Why: native SBOM and provenance output and trivial multi-platform builds. The
 `Containerfile` must remain buildable by Podman and Buildah (no BuildKit-only
 syntax).
-
-Rejected: a Podman build job (extra CI surface for no shipped benefit).
 
 ## D12. Apache-2.0
 
@@ -180,8 +165,6 @@ reaches the image. Pinning it would add another package that breaks the build
 whenever Alpine drops an old version, for no gain. The "every input pinned" rule
 applies to what ships in the final image.
 
-Rejected: pinning build-only tools.
-
 ## D14. Optional Perl modules: ship `Archive::Zip`, skip the unpackaged ones
 
 Decision: install `perl-archive-zip`; do not ship `IO::Compress::Brotli` or
@@ -194,9 +177,6 @@ locally" fails silently for those. It is pinned exactly and bumped like Perl
 Alpine 3.24; shipping them would mean compiling from CPAN, so they are out of
 scope and listed as known gaps in the README.
 
-Rejected: compiling the missing modules from CPAN (heavier image, build
-toolchain in the final stage, no package-level pin).
-
 ## D15. Required check on `main`; repo admin may bypass
 
 Decision: a ruleset on `main` requires `build-and-smoke-test`; the repo admin
@@ -205,9 +185,6 @@ Decision: a ruleset on `main` requires `build-and-smoke-test`; the repo admin
 Why: Renovate can then never merge untested changes (D6). The bypass keeps hand
 fixes to broken CI or Renovate config easy. The ruleset was created after the
 initial push so the first commit was not blocked.
-
-Rejected: no protection (auto-merge could race CI); no bypass (a broken CI
-config could lock the owner out of fixing it).
 
 ## D16. Agent instructions: `AGENTS.md` canonical, `CLAUDE.md` imports it
 
@@ -240,5 +217,4 @@ the ordering; pushing by digest and moving tags last fixes the broken-tag
 window.
 
 Rejected: tags first, verify after (shipped a broken tag); concurrency alone
-(wrong order possible); `cancel-in-progress: true` (can cancel a publish midway
-between pushing and tagging).
+(wrong order possible).

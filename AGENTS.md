@@ -26,8 +26,9 @@ Alpine minor bump (for example 3.24 to 3.25), all in one PR:
 1. Replace the base in both `FROM` lines with `alpine:3.25.X@sha256:<index digest>` (the multi-arch index digest, not a per-platform one).
 2. Change the Repology names in the `# renovate:` comments to `alpine_3_25/perl` and `alpine_3_25/perl-archive-zip`.
 3. Set `PERL_VERSION` and `PERL_ARCHIVE_ZIP_VERSION` to the exact versions in `v3.25/main`.
-4. Update the "Alpine 3.24" mention in D14 of `docs/decisions.md`.
-5. Build and smoke-test locally (below), then let CI confirm.
+4. Re-check whether `IO::Compress::Brotli` and `POSIX::strptime` are now packaged in the new branch (search the new base image with `apk search`). D14 rests on them being absent; if they are packaged, adding them is a decision change (see below).
+5. Update the "Alpine 3.24" mention in D14 of `docs/decisions.md` and the "not packaged in Alpine 3.24" line in the README's known gaps.
+6. Build and smoke-test locally (below), then let CI confirm.
 
 Renovate's own Alpine minor/major PRs are not auto-merged and fail CI until steps 2 to 4 are done on its branch.
 
