@@ -26,7 +26,7 @@
       "minimumReleaseAge": "7 days"
     },
     {
-      "description": "An Alpine minor/major bump also needs the Repology package names and Perl pins moved by hand, so it must not merge unattended",
+      "description": "An Alpine minor/major bump also needs the Repology package names and package pins moved by hand, so it must not merge unattended",
       "matchDepNames": ["alpine"],
       "matchUpdateTypes": ["minor", "major"],
       "automerge": false,
