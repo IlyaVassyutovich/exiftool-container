@@ -307,3 +307,16 @@ Why: history stays linear and every commit lands exactly as written, so the
 plain-subject rule (D18) holds without GitHub-generated "Merge pull request"
 subjects or squash suffixes. With a single allowed method, how a pull request
 lands no longer depends on who merges it.
+
+## D23. Retired in favour of randomcontainers/exiftool
+
+Decision: the image is no longer maintained. The repository is archived, so
+Renovate and the workflows stop; the published image and its tags stay on GHCR
+and are not deleted (D8). The README points to `ghcr.io/randomcontainers/exiftool`.
+
+Why: a comparison of existing exiftool images, made only after this one was
+built, found randomcontainers/exiftool already covering most of the same ground
+and ahead on several points (ExifTool's own test suite in the build, arm64,
+ExifTool's helper files, `tini`). Maintaining a second image would add nothing
+for users. Improvements from this repo that it lacks (timezone data, a cosign
+signature, a Docker Hub mirror) were offered to its maintainer instead.
