@@ -1,5 +1,10 @@
 # exiftool-container
 
+> **Retired.** This image no longer gets updates. Use
+> [`ghcr.io/randomcontainers/exiftool`](https://github.com/randomcontainers/exiftool)
+> instead; its `slim-alpine` tag is the closest match. Existing tags here stay
+> pullable but will not change. See D23 in `docs/decisions.md`.
+
 A small container image for running [exiftool](https://exiftool.org) by hand, as if it were installed locally. Alpine base, non-root, every input pinned.
 
 ## Usage
